@@ -1,23 +1,11 @@
-package main
+package repository
 
 import (
+	"../gorpc"
 	"errors"
-	"fmt"
 )
 
 const NotFound = "not found"
-
-type Page struct {
-	title string
-	body  string
-}
-
-type Repository interface {
-	GetByName(title string) (Page, error)
-	AddItem(item Page) Page
-	EditItem(title string, edit Page) (Page, error)
-	DeleteItem(item Page) (Page, error)
-}
 
 type PageRepository struct {
 	storage []Page
@@ -37,13 +25,21 @@ func (d *PageRepository) GetByName(title string) (Page, error) {
 	return Page{}, errors.New(NotFound)
 }
 
-func (d *PageRepository) AddItem(item Page) Page {
+func (d *PageRepository) Read(idx int) (Page, error) {
+	if idx >= 0 || idx < len(d.storage) {
+		return d.storage[idx], nil
+	}
+
+	return Page{}, errors.New(NotFound)
+}
+
+func (d *PageRepository) Create(item Page) Page {
 	d.storage = append(d.storage, item)
 
 	return item
 }
 
-func (d *PageRepository) EditItem(title string, edit Page) (Page, error) {
+func (d *PageRepository) Update(title string, edit Page) (Page, error) {
 	for i := range d.storage {
 		if d.storage[i].title == title {
 			d.storage[i] = edit
@@ -54,7 +50,7 @@ func (d *PageRepository) EditItem(title string, edit Page) (Page, error) {
 	return Page{}, errors.New(NotFound)
 }
 
-func (d *PageRepository) DeleteItem(item Page) (Page, error) {
+func (d *PageRepository) Delete(item Page) (Page, error) {
 	for i := range d.storage {
 		if d.storage[i].title == item.title && d.storage[i].body == item.body {
 			d.storage = append(d.storage[:i], d.storage[i+1:]...)
@@ -64,9 +60,4 @@ func (d *PageRepository) DeleteItem(item Page) (Page, error) {
 	}
 
 	return Page{}, errors.New(NotFound)
-}
-
-func main() {
-	pageRepository := NewPageRepository()
-	fmt.Println(pageRepository)
 }
