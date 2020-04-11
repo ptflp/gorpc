@@ -17,7 +17,7 @@ func NewPageRepository() Repository {
 
 func (d *PageRepository) GetByName(title string) (gorpc.Page, error) {
 	for i := range d.storage {
-		if d.storage[i].title == title {
+		if d.storage[i].Title == title {
 			return d.storage[i], nil
 		}
 	}
@@ -41,7 +41,7 @@ func (d *PageRepository) Create(item gorpc.Page) gorpc.Page {
 
 func (d *PageRepository) Update(title string, edit gorpc.Page) (gorpc.Page, error) {
 	for i := range d.storage {
-		if d.storage[i].title == title {
+		if d.storage[i].Title == title {
 			d.storage[i] = edit
 			return edit, nil
 		}
@@ -52,7 +52,7 @@ func (d *PageRepository) Update(title string, edit gorpc.Page) (gorpc.Page, erro
 
 func (d *PageRepository) Delete(item gorpc.Page) (gorpc.Page, error) {
 	for i := range d.storage {
-		if d.storage[i].title == item.title && d.storage[i].body == item.body {
+		if d.storage[i].Title == item.Title && d.storage[i].Body == item.Body {
 			d.storage = append(d.storage[:i], d.storage[i+1:]...)
 
 			return item, nil

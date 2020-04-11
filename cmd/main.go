@@ -1,8 +1,8 @@
 package main
 
 import (
-	"../repository"
 	"fmt"
+	"github.com/ptflp/gorpc/repository"
 	"log"
 	"net"
 	"net/http"
