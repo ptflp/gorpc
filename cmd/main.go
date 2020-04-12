@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"github.com/ptflp/gorpc/repository"
+	"github.com/ptflp/gorpc/rpca"
 	"log"
 	"net"
 	"net/http"
@@ -11,8 +11,8 @@ import (
 
 func main() {
 	pageRepository := repository.NewPageRepository()
-	fmt.Println(pageRepository)
-	err := rpc.Register(pageRepository)
+	rpcAPI := rpca.NewAPI(pageRepository)
+	err := rpc.Register(rpcAPI)
 
 	if err != nil {
 		log.Fatal("error registering rpc", err)

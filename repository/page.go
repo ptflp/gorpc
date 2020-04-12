@@ -12,7 +12,7 @@ type PageRepository struct {
 	storage []gorpc.Page
 }
 
-func NewPageRepository() Repository {
+func NewPageRepository() *PageRepository {
 	return &PageRepository{}
 }
 
