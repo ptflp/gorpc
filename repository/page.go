@@ -3,6 +3,7 @@ package repository
 import (
 	"errors"
 	"github.com/ptflp/gorpc"
+	"unicode/utf8"
 )
 
 const NotFound = "not found"
@@ -15,35 +16,53 @@ func NewPageRepository() Repository {
 	return &PageRepository{}
 }
 
-func (d *PageRepository) GetByName(title string) (gorpc.Page, error) {
+func (d *PageRepository) GetAll() []gorpc.Page {
+	return d.storage
+}
+
+func (d *PageRepository) Read(p gorpc.Page) ([]gorpc.Page, error) {
+	var res []gorpc.Page
 	for i := range d.storage {
-		if d.storage[i].Title == title {
-			return d.storage[i], nil
+		if p.ID == d.storage[i].ID {
+			p.ID = i
+			return []gorpc.Page{p}, nil
+		}
+		if p.Title == d.storage[i].Title && p.Body == d.storage[i].Body {
+			p.ID = i
+			res = append(res, p)
+			continue
+		}
+		if p.Title == d.storage[i].Title && utf8.RuneCountInString(p.Body) == 0 {
+			p.ID = i
+			res = append(res, p)
+			continue
+		}
+		if p.Body == d.storage[i].Body && utf8.RuneCountInString(p.Title) == 0 {
+			p.ID = i
+			res = append(res, p)
+			continue
 		}
 	}
 
-	return gorpc.Page{}, errors.New(NotFound)
-}
-
-func (d *PageRepository) Read(idx int) (gorpc.Page, error) {
-	if idx >= 0 || idx < len(d.storage) {
-		return d.storage[idx], nil
+	if len(res) > 0 {
+		return res, nil
 	}
 
-	return gorpc.Page{}, errors.New(NotFound)
+	return res, errors.New(NotFound)
 }
 
-func (d *PageRepository) Create(item gorpc.Page) gorpc.Page {
-	d.storage = append(d.storage, item)
+func (d *PageRepository) Create(p gorpc.Page) gorpc.Page {
+	p.ID = len(d.storage)
+	d.storage = append(d.storage, p)
 
-	return item
+	return p
 }
 
-func (d *PageRepository) Update(title string, edit gorpc.Page) (gorpc.Page, error) {
+func (d *PageRepository) Update(p gorpc.Page) (gorpc.Page, error) {
 	for i := range d.storage {
-		if d.storage[i].Title == title {
-			d.storage[i] = edit
-			return edit, nil
+		if d.storage[i].ID == p.ID {
+			d.storage[i] = p
+			return p, nil
 		}
 	}
 
@@ -60,4 +79,14 @@ func (d *PageRepository) Delete(item gorpc.Page) (gorpc.Page, error) {
 	}
 
 	return gorpc.Page{}, errors.New(NotFound)
+}
+
+func (d *PageRepository) GetByTitle(title string) ([]gorpc.Page, error) {
+	res, err := d.Read(gorpc.Page{Title: title})
+
+	if err == nil {
+		return res, nil
+	}
+
+	return res, errors.New(NotFound)
 }
